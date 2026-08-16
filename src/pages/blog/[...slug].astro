@@ -1,0 +1,131 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('blog');
+	return posts.map((post) => ({
+		params: { slug: post.id },
+		props: { post },
+	}));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const words = post.body?.split(/\s+/).length ?? 0;
+const readingTime = Math.max(1, Math.round(words / 200));
+---
+
+<Layout title={`${post.data.title} — Kanishka Das`} description={post.data.summary}>
+	<article>
+		<a class="back-link" href="/blog">&larr; back to blog</a>
+		{post.data.coverImage && (
+			<img src={post.data.coverImage} alt="" class="cover" />
+		)}
+		<h1>{post.data.title}</h1>
+		<div class="meta">
+			<time datetime={post.data.publishDate.toISOString()}>
+				{post.data.publishDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+			</time>
+			<span>&middot;</span>
+			<span>{readingTime} min read</span>
+		</div>
+		{post.data.tags.length > 0 && (
+			<ul class="tags">
+				{post.data.tags.map((tag) => <li>{tag}</li>)}
+			</ul>
+		)}
+		<div class="prose">
+			<Content />
+		</div>
+	</article>
+</Layout>
+
+<style>
+	article {
+		max-width: var(--max-width-prose);
+		margin: 0 auto;
+		padding: var(--space-5) 0 var(--space-6);
+	}
+
+	.back-link {
+		display: inline-block;
+		font-family: var(--font-heading);
+		font-size: 14px;
+		color: var(--text-secondary);
+		padding-bottom: var(--space-3);
+	}
+
+	.back-link:hover {
+		color: var(--accent-text);
+	}
+
+	.cover {
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		object-fit: cover;
+		border-radius: 8px;
+		margin-bottom: var(--space-3);
+	}
+
+	h1 {
+		font-size: 32px;
+	}
+
+	.meta {
+		display: flex;
+		gap: var(--space-1);
+		color: var(--text-secondary);
+		font-family: var(--font-code);
+		font-size: 13px;
+		padding: var(--space-2) 0;
+	}
+
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1);
+		list-style: none;
+		font-family: var(--font-code);
+		font-size: 12px;
+		color: var(--text-secondary);
+		padding-bottom: var(--space-4);
+	}
+
+	.tags li {
+		border: 1px solid var(--border);
+		border-radius: 4px;
+		padding: 2px 6px;
+	}
+
+	.prose :global(h2) {
+		font-size: 22px;
+		padding: var(--space-4) 0 var(--space-2);
+	}
+
+	.prose :global(p) {
+		padding-bottom: var(--space-2);
+	}
+
+	.prose :global(pre) {
+		padding: var(--space-2);
+		border-radius: 8px;
+		overflow-x: auto;
+		margin-bottom: var(--space-2);
+		font-size: 14px;
+	}
+
+	.prose :global(code) {
+		font-size: 0.9em;
+	}
+
+	.prose :global(img) {
+		border-radius: 8px;
+		margin-bottom: var(--space-2);
+	}
+
+	.prose :global(a) {
+		text-decoration: underline;
+	}
+</style>

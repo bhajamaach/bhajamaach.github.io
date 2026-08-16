@@ -1,0 +1,195 @@
+<div id="cube-wrap" class="cube-wrap">
+	<canvas id="cube-canvas"></canvas>
+	<div id="cube-fallback" class="cube-fallback" hidden></div>
+</div>
+
+<style>
+	.cube-wrap {
+		width: 100%;
+		height: clamp(240px, 42vh, 420px);
+		cursor: grab;
+		touch-action: none;
+		position: relative;
+	}
+	.cube-wrap:active {
+		cursor: grabbing;
+	}
+	#cube-canvas {
+		width: 100%;
+		height: 100%;
+		display: block;
+	}
+	.cube-fallback {
+		position: absolute;
+		inset: 0;
+		border-radius: 12px;
+		background: radial-gradient(circle at 50% 50%, var(--accent) 0%, transparent 70%);
+		opacity: 0.25;
+	}
+</style>
+
+<script>
+	function supportsWebGL(): boolean {
+		try {
+			const canvas = document.createElement('canvas');
+			return !!(canvas.getContext('webgl2') || canvas.getContext('webgl'));
+		} catch {
+			return false;
+		}
+	}
+
+	function showFallback() {
+		const canvas = document.getElementById('cube-canvas');
+		const fallback = document.getElementById('cube-fallback');
+		canvas?.remove();
+		if (fallback) fallback.hidden = false;
+	}
+
+	async function init() {
+		if (!supportsWebGL()) {
+			showFallback();
+			return;
+		}
+
+		const wrap = document.getElementById('cube-wrap') as HTMLDivElement;
+		const canvas = document.getElementById('cube-canvas') as HTMLCanvasElement;
+		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		let THREE: typeof import('three');
+		try {
+			THREE = await import('three');
+		} catch {
+			showFallback();
+			return;
+		}
+
+		const scene = new THREE.Scene();
+		const camera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
+		camera.position.z = 6.5;
+
+		const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+		renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+
+		const group = new THREE.Group();
+		scene.add(group);
+
+		// Build a cube made of points sampled across its 6 faces, not just edges —
+		// this is what makes it read as a "particle cube" instead of a wireframe.
+		const size = 2.2;
+		const density = 14; // points per edge, per face
+		const positions: number[] = [];
+
+		function addFace(normalAxis: 'x' | 'y' | 'z', sign: number) {
+			const half = size / 2;
+			for (let i = 0; i < density; i++) {
+				for (let j = 0; j < density; j++) {
+					const u = (i / (density - 1) - 0.5) * size;
+					const v = (j / (density - 1) - 0.5) * size;
+					let x = 0, y = 0, z = 0;
+					if (normalAxis === 'x') { x = sign * half; y = u; z = v; }
+					if (normalAxis === 'y') { y = sign * half; x = u; z = v; }
+					if (normalAxis === 'z') { z = sign * half; x = u; y = v; }
+					positions.push(x, y, z);
+				}
+			}
+		}
+
+		(['x', 'y', 'z'] as const).forEach((axis) => {
+			addFace(axis, 1);
+			addFace(axis, -1);
+		});
+
+		const geometry = new THREE.BufferGeometry();
+		geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+
+		const accentHex = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#5aa4ea';
+		const material = new THREE.PointsMaterial({
+			color: accentHex,
+			size: 0.045,
+			sizeAttenuation: true,
+			transparent: true,
+			opacity: 0.85,
+		});
+
+		const points = new THREE.Points(geometry, material);
+		group.add(points);
+
+		let rotY = 0.4;
+		let rotX = 0.3;
+		const autoSpeed = reduceMotion ? 0 : 0.0035;
+		let dragging = false;
+		let lastX = 0, lastY = 0;
+		let velX = 0, velY = 0;
+
+		function pointerDown(x: number, y: number) {
+			dragging = true;
+			lastX = x; lastY = y;
+		}
+		function pointerMove(x: number, y: number) {
+			if (!dragging) return;
+			const dx = x - lastX, dy = y - lastY;
+			rotY += dx * 0.006;
+			rotX += dy * 0.006;
+			velX = dx * 0.006;
+			velY = dy * 0.006;
+			lastX = x; lastY = y;
+		}
+		function pointerUp() { dragging = false; }
+
+		canvas.addEventListener('mousedown', (e) => pointerDown(e.clientX, e.clientY));
+		window.addEventListener('mousemove', (e) => pointerMove(e.clientX, e.clientY));
+		window.addEventListener('mouseup', pointerUp);
+		canvas.addEventListener('touchstart', (e) => { const t = e.touches[0]; pointerDown(t.clientX, t.clientY); }, { passive: true });
+		canvas.addEventListener('touchmove', (e) => { const t = e.touches[0]; pointerMove(t.clientX, t.clientY); }, { passive: true });
+		canvas.addEventListener('touchend', pointerUp);
+
+		function renderStatic() {
+			group.rotation.y = rotY;
+			group.rotation.x = rotX;
+			renderer.render(scene, camera);
+		}
+
+		function animate() {
+			requestAnimationFrame(animate);
+			if (!dragging) {
+				velX *= 0.94;
+				velY *= 0.94;
+				rotY += autoSpeed + velX;
+				rotX += velY;
+			}
+			group.rotation.y = rotY;
+			group.rotation.x = rotX;
+
+			// Subtle depth cue: pulse point size slightly with rotation so the
+			// cube reads as volumetric rather than a flat sprite cluster.
+			material.size = reduceMotion ? 0.045 : 0.045 + Math.sin(rotY * 2) * 0.004;
+
+			renderer.render(scene, camera);
+		}
+
+		// Dragging still works under reduced motion; only the idle auto-rotation loop is skipped (NFR-2.4).
+		if (reduceMotion) {
+			renderStatic();
+			canvas.addEventListener('mousemove', renderStatic);
+			canvas.addEventListener('touchmove', renderStatic, { passive: true });
+		} else {
+			animate();
+		}
+
+		window.addEventListener('resize', () => {
+			const w = wrap.clientWidth, h = wrap.clientHeight;
+			camera.aspect = w / h;
+			camera.updateProjectionMatrix();
+			renderer.setSize(w, h);
+			if (reduceMotion) renderStatic();
+		});
+	}
+
+	// Defer three.js off the critical path so it never competes with homepage text for LCP (NFR-1.4).
+	if ('requestIdleCallback' in window) {
+		(window as any).requestIdleCallback(init);
+	} else {
+		window.addEventListener('load', () => setTimeout(init, 0));
+	}
+</script>

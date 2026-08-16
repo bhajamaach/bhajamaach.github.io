@@ -1,0 +1,49 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Contact — Kanishka Das" description="Get in touch with Kanishka Das (bhajamaach).">
+	<section class="contact">
+		<h1>Say hi</h1>
+		<p>Easiest way is email — I read everything that lands there. Otherwise I'm bhajamaach basically everywhere else.</p>
+		<ul>
+			<li><a href="mailto:kanishkapersonalprojects@gmail.com">kanishkapersonalprojects@gmail.com</a></li>
+			<li><a href="https://github.com/bhajamaach" target="_blank" rel="me noreferrer">github.com/bhajamaach</a></li>
+			<li><a href="https://x.com/bhajamaacha" target="_blank" rel="me noreferrer">x.com/bhajamaacha</a></li>
+			<li><a href="https://www.linkedin.com/in/kanishka-das-512320284" target="_blank" rel="me noreferrer">linkedin.com/in/kanishka-das</a></li>
+			<li><a href="/resume.pdf" target="_blank" rel="noreferrer">Resume (PDF)</a></li>
+		</ul>
+	</section>
+</Layout>
+
+<style>
+	.contact {
+		max-width: var(--max-width-prose);
+		padding: var(--space-5) 0 var(--space-6);
+	}
+
+	h1 {
+		font-size: 32px;
+		padding-bottom: var(--space-2);
+	}
+
+	p {
+		color: var(--text-secondary);
+		padding-bottom: var(--space-3);
+	}
+
+	ul {
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		font-family: var(--font-heading);
+	}
+
+	a {
+		display: inline-block;
+		min-height: 44px;
+		display: inline-flex;
+		align-items: center;
+	}
+</style>

@@ -1,0 +1,77 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+
+const { pathname } = Astro.url;
+const links = [
+	{ href: '/projects', label: 'projects' },
+	{ href: '/blog', label: 'blog' },
+	{ href: '/contact', label: 'contact' },
+	{ href: '/resume.pdf', label: 'resume', external: true },
+];
+---
+
+<header class="site-nav">
+	<a class="logo" href="/">kanishka</a>
+	<div class="links">
+		{links.map((link) => (
+			<a
+				href={link.href}
+				aria-current={pathname === link.href ? 'page' : undefined}
+				target={link.external ? '_blank' : undefined}
+				rel={link.external ? 'noreferrer' : undefined}
+			>{link.label}</a>
+		))}
+		<ThemeToggle />
+	</div>
+</header>
+
+<style>
+	.site-nav {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--space-2);
+		width: 100%;
+		max-width: var(--max-width-page);
+		margin: 0 auto;
+		padding: var(--space-3);
+	}
+
+	.logo {
+		font-family: var(--font-heading);
+		font-weight: 500;
+		color: var(--text-primary);
+	}
+
+	.logo:hover {
+		text-decoration: none;
+		color: var(--accent-text);
+	}
+
+	.links {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-3);
+		font-family: var(--font-heading);
+		font-size: 14px;
+	}
+
+	.links a {
+		color: var(--text-primary);
+		padding: var(--space-1) 0;
+	}
+
+	.links a:hover,
+	.links a[aria-current='page'] {
+		color: var(--accent-text);
+	}
+
+	@media (max-width: 560px) {
+		.links {
+			gap: var(--space-2);
+			font-size: 13px;
+		}
+	}
+</style>

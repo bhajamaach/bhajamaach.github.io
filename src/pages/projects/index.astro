@@ -1,0 +1,222 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SearchBox from '../../components/SearchBox.astro';
+import { getCollection } from 'astro:content';
+
+const projects = await getCollection('projects');
+const categories = [
+	{ name: 'Systems', tagline: 'Low-level stuff — memory, rendering, the OS layer most people never touch.' },
+	{ name: 'AI/ML', tagline: 'Data, models, and figuring out how the two actually fit together.' },
+	{ name: 'Client Work', tagline: 'Freelance and internship projects for real clients.' },
+] as const;
+---
+
+<Layout title="Projects — Kanishka Das" description="Systems, AI/ML, and client projects by Kanishka Das (bhajamaach).">
+	<header class="page-head">
+		<h1>Things I've actually finished</h1>
+		<p>I start more projects than this. These are the ones that got to a working state.</p>
+	</header>
+
+	<SearchBox id="project-search" placeholder="search by name or tech..." />
+
+	{categories.map(({ name, tagline }) => {
+		const items = projects.filter((p) => p.data.category === name);
+		if (items.length === 0) return null;
+		return (
+			<section class="category">
+				<div class="category-head">
+					<h2>{name}</h2>
+					<p>{tagline}</p>
+				</div>
+				<ul class="grid">
+					{items.map((project, index) => {
+						const search = `${project.data.name} ${project.data.description} ${project.data.techStack.join(' ')}`.toLowerCase();
+						return (
+							<li class="card" data-search={search} data-index={index}>
+								{project.data.coverImage && (
+									<img src={project.data.coverImage} alt="" loading="lazy" class="thumb" />
+								)}
+								<a class="stretched-link" href={`/projects/${project.id}/`} aria-label={`View details for ${project.data.name}`}></a>
+								<h3>{project.data.name}</h3>
+								<p>{project.data.description}</p>
+								<ul class="tags">
+									{project.data.techStack.map((tech) => <li>{tech}</li>)}
+								</ul>
+								<div class="links">
+									{project.data.githubUrl && <a href={project.data.githubUrl} target="_blank" rel="noreferrer">GitHub →</a>}
+									{project.data.liveUrl && <a href={project.data.liveUrl} target="_blank" rel="noreferrer">Live →</a>}
+								</div>
+							</li>
+						);
+					})}
+				</ul>
+			</section>
+		);
+	})}
+
+	<p class="no-results" id="no-results" hidden>No projects match that search.</p>
+</Layout>
+
+<style>
+	.page-head {
+		padding: var(--space-5) 0 var(--space-4);
+		max-width: var(--max-width-prose);
+	}
+
+	.page-head h1 {
+		font-size: 32px;
+		padding-bottom: var(--space-2);
+	}
+
+	.page-head p {
+		color: var(--text-secondary);
+		font-size: 16px;
+	}
+
+	.category {
+		padding-bottom: var(--space-5);
+	}
+
+	.category-head {
+		padding-bottom: var(--space-3);
+		border-bottom: 1px solid var(--border);
+		margin-bottom: var(--space-3);
+	}
+
+	.category-head h2 {
+		font-size: 20px;
+		padding-bottom: 4px;
+	}
+
+	.category-head p {
+		color: var(--text-secondary);
+		font-size: 14px;
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: var(--space-3);
+		list-style: none;
+	}
+
+	.card {
+		position: relative;
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		padding: var(--space-3);
+		background: var(--bg-elevated);
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		transition: border-color 0.15s ease, transform 0.15s ease;
+	}
+
+	.card:hover {
+		border-color: var(--accent);
+		transform: translateY(-2px);
+	}
+
+	.stretched-link {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		border-radius: inherit;
+	}
+
+	.thumb {
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		object-fit: cover;
+		border-radius: 6px;
+		margin-bottom: var(--space-1);
+	}
+
+	.card h3 {
+		font-size: 16px;
+	}
+
+	.card p {
+		color: var(--text-secondary);
+		font-size: 14px;
+	}
+
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1);
+		list-style: none;
+		font-family: var(--font-code);
+		font-size: 12px;
+		color: var(--text-secondary);
+		padding-top: var(--space-1);
+	}
+
+	.tags li {
+		border: 1px solid var(--border);
+		border-radius: 4px;
+		padding: 2px 6px;
+	}
+
+	.links {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		gap: var(--space-2);
+		padding-top: var(--space-1);
+		font-family: var(--font-heading);
+		font-size: 14px;
+	}
+
+	.no-results {
+		color: var(--text-secondary);
+		padding: var(--space-3) 0 var(--space-6);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.card:hover {
+			transform: none;
+		}
+	}
+</style>
+
+<script>
+	import { fuzzyScore } from '../../lib/fuzzy';
+
+	const input = document.getElementById('project-search') as HTMLInputElement | null;
+	const noResults = document.getElementById('no-results');
+
+	function applyFilter() {
+		const query = (input?.value ?? '').trim().toLowerCase();
+		let anyVisible = false;
+
+		document.querySelectorAll<HTMLElement>('.category').forEach((section) => {
+			const grid = section.querySelector('.grid');
+			const cards = Array.from(section.querySelectorAll<HTMLElement>('[data-search]'));
+			const scored = cards.map((card) => ({
+				card,
+				score: fuzzyScore(query, card.dataset.search ?? ''),
+			}));
+
+			scored.sort((a, b) => {
+				if (query) return (b.score ?? -1) - (a.score ?? -1);
+				return Number(a.card.dataset.index) - Number(b.card.dataset.index);
+			});
+
+			let sectionHasMatch = false;
+			scored.forEach(({ card, score }) => {
+				card.hidden = score === null;
+				if (score !== null) sectionHasMatch = true;
+				grid?.appendChild(card);
+			});
+
+			section.hidden = !sectionHasMatch;
+			if (sectionHasMatch) anyVisible = true;
+		});
+
+		if (noResults) noResults.hidden = anyVisible;
+	}
+
+	input?.addEventListener('input', applyFilter);
+</script>

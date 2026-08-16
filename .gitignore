@@ -1,0 +1,20 @@
+# build output
+dist/
+
+# dependencies
+node_modules/
+
+# generated content
+.astro/
+
+# environment variables
+.env
+.env.production
+
+# macOS
+.DS_Store
+.vscode/
+# editor
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json

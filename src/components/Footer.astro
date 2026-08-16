@@ -1,0 +1,34 @@
+---
+const year = 2026;
+---
+
+<footer class="site-footer">
+	<span>&copy; {year} bhajamaach</span>
+	<div class="links">
+		<a href="https://github.com/bhajamaach" target="_blank" rel="me noreferrer">github</a>
+		<a href="https://www.linkedin.com/in/kanishka-das-512320284" target="_blank" rel="me noreferrer">linkedin</a>
+		<a href="https://x.com/bhajamaacha" target="_blank" rel="me noreferrer">x</a>
+		<a href="mailto:kanishkapersonalprojects@gmail.com">email</a>
+	</div>
+</footer>
+
+<style>
+	.site-footer {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		max-width: var(--max-width-page);
+		margin: 0 auto;
+		padding: var(--space-4) var(--space-3) var(--space-5);
+		color: var(--text-secondary);
+		font-size: 14px;
+	}
+
+	.links {
+		display: flex;
+		gap: var(--space-3);
+		font-family: var(--font-heading);
+	}
+</style>

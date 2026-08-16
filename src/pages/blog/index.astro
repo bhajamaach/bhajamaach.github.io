@@ -1,0 +1,154 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import EmailCapture from '../../components/EmailCapture.astro';
+import SearchBox from '../../components/SearchBox.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+);
+---
+
+<Layout title="Blog — Kanishka Das" description="Technical writing on systems, performance, and AI infrastructure, by bhajamaach.">
+	<h1>Blog</h1>
+	<p class="intro">Notes from whatever I'm building at the time — mostly bugs I chased for too long and what I learned fixing them.</p>
+
+	{posts.length > 0 && <SearchBox id="blog-search" placeholder="search by title or tag..." />}
+
+	<ul class="posts">
+		{posts.map((post, index) => {
+			const search = `${post.data.title} ${post.data.tags.join(' ')} ${post.data.summary ?? ''}`.toLowerCase();
+			return (
+				<li data-search={search} data-index={index}>
+					<a href={`/blog/${post.id}/`}>
+						<h2>{post.data.title}</h2>
+						<time datetime={post.data.publishDate.toISOString()}>
+							{post.data.publishDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+						</time>
+						{post.data.summary && <p>{post.data.summary}</p>}
+						{post.data.tags.length > 0 && (
+							<ul class="tags">
+								{post.data.tags.map((tag) => <li>{tag}</li>)}
+							</ul>
+						)}
+					</a>
+				</li>
+			);
+		})}
+	</ul>
+
+	{posts.length === 0 && <p class="empty">Nothing published yet — first post is coming once a project hits a milestone worth writing about.</p>}
+	<p class="no-results" id="no-results" hidden>No posts match that search.</p>
+
+	<div class="subscribe">
+		<EmailCapture />
+	</div>
+</Layout>
+
+<style>
+	h1 {
+		font-size: 32px;
+		padding: var(--space-5) 0 var(--space-2);
+	}
+
+	.intro {
+		color: var(--text-secondary);
+		max-width: var(--max-width-prose);
+		padding-bottom: var(--space-4);
+	}
+
+	.posts {
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+		max-width: var(--max-width-prose);
+	}
+
+	.posts a {
+		color: var(--text-primary);
+		display: block;
+	}
+
+	.posts a:hover h2 {
+		color: var(--accent-text);
+		text-decoration: underline;
+	}
+
+	.posts h2 {
+		font-size: 20px;
+	}
+
+	.posts time {
+		display: block;
+		color: var(--text-secondary);
+		font-size: 13px;
+		font-family: var(--font-code);
+		padding: var(--space-1) 0;
+	}
+
+	.posts p {
+		color: var(--text-secondary);
+	}
+
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1);
+		list-style: none;
+		font-family: var(--font-code);
+		font-size: 12px;
+		color: var(--text-secondary);
+		padding-top: var(--space-1);
+	}
+
+	.tags li {
+		border: 1px solid var(--border);
+		border-radius: 4px;
+		padding: 2px 6px;
+	}
+
+	.empty,
+	.no-results {
+		color: var(--text-secondary);
+		padding-bottom: var(--space-4);
+	}
+
+	.subscribe {
+		max-width: var(--max-width-prose);
+		margin-top: var(--space-5);
+	}
+</style>
+
+<script>
+	import { fuzzyScore } from '../../lib/fuzzy';
+
+	const input = document.getElementById('blog-search') as HTMLInputElement | null;
+	const noResults = document.getElementById('no-results');
+	const list = document.querySelector('.posts');
+
+	function applyFilter() {
+		const query = (input?.value ?? '').trim().toLowerCase();
+		const items = Array.from(document.querySelectorAll<HTMLLIElement>('.posts li[data-search]'));
+		const scored = items.map((item) => ({
+			item,
+			score: fuzzyScore(query, item.dataset.search ?? ''),
+		}));
+
+		scored.sort((a, b) => {
+			if (query) return (b.score ?? -1) - (a.score ?? -1);
+			return Number(a.item.dataset.index) - Number(b.item.dataset.index);
+		});
+
+		let anyVisible = false;
+		scored.forEach(({ item, score }) => {
+			item.hidden = score === null;
+			if (score !== null) anyVisible = true;
+			list?.appendChild(item);
+		});
+
+		if (noResults) noResults.hidden = anyVisible;
+	}
+
+	input?.addEventListener('input', applyFilter);
+</script>

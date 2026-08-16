@@ -1,0 +1,60 @@
+---
+interface Props {
+	id: string;
+	placeholder: string;
+}
+
+const { id, placeholder } = Astro.props;
+---
+
+<div class="search-box">
+	<span class="prompt" aria-hidden="true">&gt;</span>
+	<input type="search" id={id} placeholder={placeholder} autocomplete="off" />
+</div>
+
+<style>
+	.search-box {
+		display: flex;
+		align-items: center;
+		gap: var(--space-1);
+		max-width: 360px;
+		border: 1px solid var(--border);
+		border-radius: 4px;
+		background: var(--bg-elevated);
+		padding: 0 var(--space-2);
+		margin-bottom: var(--space-4);
+	}
+
+	.search-box:focus-within {
+		border-color: var(--accent);
+	}
+
+	.prompt {
+		font-family: var(--font-code);
+		color: var(--accent-text);
+		font-size: 14px;
+	}
+
+	input {
+		flex: 1;
+		min-height: 44px;
+		border: none;
+		background: transparent;
+		color: var(--text-primary);
+		font-family: var(--font-code);
+		font-size: 14px;
+	}
+
+	input:focus {
+		outline: none;
+	}
+
+	input::placeholder {
+		color: var(--text-secondary);
+	}
+
+	/* Remove the native WebKit search-cancel button so it doesn't clash with the custom look. */
+	input[type='search']::-webkit-search-cancel-button {
+		-webkit-appearance: none;
+	}
+</style>
