@@ -41,4 +41,7 @@ All commands run from the project root:
 
 ## Deployment notes
 
-- `site` in `astro.config.mjs` must match the live domain — it's used for RSS item links, the sitemap, and canonical/OG URLs.
+- Deployed via GitHub Pages (`.github/workflows/deploy.yml`) — builds and deploys on every push to `main`.
+- `site` in `astro.config.mjs` must match the live domain — it's used for RSS item links, the sitemap, canonical/OG URLs, and the JSON-LD structured data in `Layout.astro`.
+- Currently set to `https://bhajamaach.github.io` (this repo is the `bhajamaach.github.io` user site, so it serves at the root, no path prefix).
+- Once `bhajamaach.dev` is purchased: point its DNS `ALIAS`/`ANAME` record (or `A` records per [GitHub's docs](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site)) at GitHub Pages, add a `public/CNAME` file containing `bhajamaach.dev`, and update `site` in `astro.config.mjs` to `https://bhajamaach.dev`. Also update the two hardcoded domain references in `public/robots.txt` (Sitemap + llms.txt pointer).

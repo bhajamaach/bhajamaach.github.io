@@ -16,6 +16,7 @@ const { Content } = await render(post);
 const words = post.body?.split(/\s+/).length ?? 0;
 const readingTime = Math.max(1, Math.round(words / 200));
 
+const siteURL = Astro.site?.toString().replace(/\/$/, '') ?? '';
 const articleSchema = {
 	'@context': 'https://schema.org',
 	'@type': 'BlogPosting',
@@ -23,8 +24,8 @@ const articleSchema = {
 	description: post.data.summary,
 	datePublished: post.data.publishDate.toISOString(),
 	keywords: post.data.tags.join(', '),
-	author: { '@id': 'https://bhajamaach.dev/#person' },
-	...(post.data.coverImage && { image: new URL(post.data.coverImage, 'https://bhajamaach.dev').toString() }),
+	author: { '@id': `${siteURL}/#person` },
+	...(post.data.coverImage && { image: new URL(post.data.coverImage, Astro.site).toString() }),
 };
 ---
 

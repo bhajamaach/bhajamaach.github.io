@@ -4,8 +4,9 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-	// TODO: confirm once purchased — required for RSS item links to be absolute.
-	site: 'https://bhajamaach.dev',
+	// Currently the live GitHub Pages URL. Switch to https://bhajamaach.dev once the domain
+	// is purchased and DNS/CNAME is configured — see README's deployment notes.
+	site: 'https://bhajamaach.github.io',
 	integrations: [sitemap()],
 	markdown: {
 		shikiConfig: {

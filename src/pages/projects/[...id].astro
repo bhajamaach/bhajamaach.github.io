@@ -13,16 +13,17 @@ export async function getStaticPaths() {
 const { project } = Astro.props;
 const { Content } = await render(project);
 
+const siteURL = Astro.site?.toString().replace(/\/$/, '') ?? '';
 const projectSchema = {
 	'@context': 'https://schema.org',
 	'@type': 'CreativeWork',
 	name: project.data.name,
 	description: project.data.description,
 	keywords: project.data.techStack.join(', '),
-	author: { '@id': 'https://bhajamaach.dev/#person' },
+	author: { '@id': `${siteURL}/#person` },
 	...(project.data.githubUrl && { codeRepository: project.data.githubUrl }),
 	...(project.data.liveUrl && { url: project.data.liveUrl }),
-	...(project.data.coverImage && { image: new URL(project.data.coverImage, 'https://bhajamaach.dev').toString() }),
+	...(project.data.coverImage && { image: new URL(project.data.coverImage, Astro.site).toString() }),
 };
 ---
 

@@ -12,16 +12,17 @@ interface Props {
 const { title, description = "Kanishka Das — systems engineer, AI infra", image } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const ogImageURL = new URL(image ?? '/og-default.png', Astro.site);
+const siteURL = Astro.site?.toString().replace(/\/$/, '') ?? '';
 
 const personSchema = {
 	'@context': 'https://schema.org',
 	'@graph': [
 		{
 			'@type': 'Person',
-			'@id': 'https://bhajamaach.dev/#person',
+			'@id': `${siteURL}/#person`,
 			name: 'Kanishka Das',
 			alternateName: 'bhajamaach',
-			url: 'https://bhajamaach.dev',
+			url: siteURL,
 			jobTitle: 'Systems Engineer',
 			description: 'Systems engineer working on allocators, renderers, kernels, and AI infrastructure — inference and serving.',
 			sameAs: [
@@ -32,11 +33,11 @@ const personSchema = {
 		},
 		{
 			'@type': 'WebSite',
-			'@id': 'https://bhajamaach.dev/#website',
-			url: 'https://bhajamaach.dev',
+			'@id': `${siteURL}/#website`,
+			url: siteURL,
 			name: 'Kanishka Das (bhajamaach)',
 			description: 'Personal site and portfolio for Kanishka Das — systems engineering, AI infra, and low-level performance work.',
-			author: { '@id': 'https://bhajamaach.dev/#person' },
+			author: { '@id': `${siteURL}/#person` },
 			inLanguage: 'en',
 		},
 	],

@@ -2,7 +2,7 @@ import { getCollection } from 'astro:content';
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ site }) => {
-	const base = site?.toString().replace(/\/$/, '') ?? 'https://bhajamaach.dev';
+	const base = site?.toString().replace(/\/$/, '') ?? 'https://bhajamaach.github.io';
 	const projects = await getCollection('projects');
 	const posts = (await getCollection('blog')).sort(
 		(a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
