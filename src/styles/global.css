@@ -1,13 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap');
 
 :root {
-  --bg: #fafafa;
-  --bg-elevated: #eeeeec;
-  --text-primary: #0a0a0a;
-  --text-secondary: #47453f;
-  --border: #d0d0c9;
-  --accent: #2f6fb8;
-  --accent-text: #0b3d72;
+  --bg: #f0efe9;
+  --bg-elevated: #e6e4dc;
+  --text-primary: #14140f;
+  --text-secondary: #55534a;
+  --border: #d2cfc3;
+  --accent: #1a56c4;
+  --accent-text: #123f8f;
 
   --font-heading: 'IBM Plex Mono', monospace;
   --font-body: 'IBM Plex Sans', sans-serif;
@@ -128,4 +128,18 @@ main {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Scroll-reveal: only takes effect once JS confirms it can run the observer,
+   so content stays visible by default if JS is blocked or fails (see Layout.astro). */
+:root.js-reveal .reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition-delay: calc(var(--i, 0) * 60ms);
+}
+
+:root.js-reveal .reveal.is-visible {
+  opacity: 1;
+  transform: none;
 }

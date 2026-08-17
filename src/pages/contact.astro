@@ -1,20 +1,127 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const upiId = 'kanishka2004das@oksbi';
+const payeeName = 'bhajamaach';
+const amounts = [21, 51, 101, 501];
 ---
 
 <Layout title="Contact — Kanishka Das" description="Get in touch with Kanishka Das (bhajamaach).">
 	<section class="contact">
 		<h1>Say hi</h1>
-		<p>Easiest way is email — I read everything that lands there. Otherwise I'm bhajamaach basically everywhere else.</p>
-		<ul>
-			<li><a href="mailto:kanishkapersonalprojects@gmail.com">kanishkapersonalprojects@gmail.com</a></li>
-			<li><a href="https://github.com/bhajamaach" target="_blank" rel="me noreferrer">github.com/bhajamaach</a></li>
-			<li><a href="https://x.com/bhajamaacha" target="_blank" rel="me noreferrer">x.com/bhajamaacha</a></li>
-			<li><a href="https://www.linkedin.com/in/kanishka-das-512320284" target="_blank" rel="me noreferrer">linkedin.com/in/kanishka-das</a></li>
-			<li><a href="/resume.pdf" target="_blank" rel="noreferrer">Resume (PDF)</a></li>
-		</ul>
+		<p>Open to interesting projects, collaborations, and conversations — whether you've got something in mind or just want to say hi.</p>
+
+		<div class="cta-row">
+			<a class="cta" href="mailto:kanishkapersonalprojects@gmail.com">Send an email →</a>
+			<button class="cta-ghost" type="button" id="open-support">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+					<path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+					<path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z" />
+					<line x1="6" y1="1" x2="6" y2="4" />
+					<line x1="10" y1="1" x2="10" y2="4" />
+					<line x1="14" y1="1" x2="14" y2="4" />
+				</svg>
+				Support the craft
+			</button>
+		</div>
+
+		<div class="online">
+			<h2>Find me online</h2>
+			<ul>
+				<li><a href="https://github.com/bhajamaach" target="_blank" rel="me noreferrer">github.com/bhajamaach</a></li>
+				<li><a href="https://x.com/bhajamaacha" target="_blank" rel="me noreferrer">x.com/bhajamaacha</a></li>
+				<li><a href="https://www.linkedin.com/in/kanishka-das-512320284" target="_blank" rel="me noreferrer">linkedin.com/in/kanishka-das</a></li>
+				<li><a href="/resume.pdf" target="_blank" rel="noreferrer">Resume (PDF)</a></li>
+			</ul>
+		</div>
 	</section>
+
+	<dialog id="support-dialog" data-upi-id={upiId} data-payee-name={payeeName}>
+		<button class="close" type="button" id="close-support" aria-label="Close">&times;</button>
+
+		<svg class="mug" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+			<path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+			<path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z" />
+			<line x1="6" y1="1" x2="6" y2="4" />
+			<line x1="10" y1="1" x2="10" y2="4" />
+			<line x1="14" y1="1" x2="14" y2="4" />
+		</svg>
+
+		<h2>Support the craft</h2>
+		<p class="quote">If something I've built or written has been useful to you, a small tip goes a long way — no pressure at all though.</p>
+
+		<div class="amounts" role="group" aria-label="Select amount">
+			{amounts.map((amount, index) => (
+				<button type="button" class="amount" data-amount={amount} aria-pressed={index === 0}>₹{amount}</button>
+			))}
+		</div>
+
+		<div class="qr-box">
+			<p class="qr-label" id="qr-caption">Scan to pay ₹{amounts[0]}</p>
+			<canvas id="upi-qr" width="200" height="200"></canvas>
+			<p class="qr-hint">Open any UPI app to scan</p>
+		</div>
+
+		<button class="copy-upi" type="button" id="copy-upi" data-upi={upiId}>
+			{upiId}
+			<span class="copy-label">copy</span>
+		</button>
+	</dialog>
 </Layout>
+
+<script>
+	import QRCode from 'qrcode';
+
+	const dialog = document.getElementById('support-dialog');
+	const upiId = dialog?.dataset.upiId ?? '';
+	const payeeName = dialog?.dataset.payeeName ?? '';
+	const openBtn = document.getElementById('open-support');
+	const closeBtn = document.getElementById('close-support');
+	const canvas = document.getElementById('upi-qr');
+	const caption = document.getElementById('qr-caption');
+	const amountButtons = Array.from(document.querySelectorAll('.amount'));
+	const copyBtn = document.getElementById('copy-upi');
+
+	function renderQr(amount) {
+		const upiUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR`;
+		if (canvas instanceof HTMLCanvasElement) {
+			QRCode.toCanvas(canvas, upiUri, { width: 200, margin: 1, color: { dark: '#000000', light: '#ffffff' } });
+		}
+		if (caption) caption.textContent = `Scan to pay ₹${amount}`;
+	}
+
+	amountButtons.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			amountButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+			renderQr(btn.dataset.amount);
+		});
+	});
+
+	openBtn?.addEventListener('click', () => {
+		if (dialog instanceof HTMLDialogElement) dialog.showModal();
+		renderQr(amountButtons[0]?.dataset.amount ?? '21');
+	});
+
+	closeBtn?.addEventListener('click', () => {
+		if (dialog instanceof HTMLDialogElement) dialog.close();
+	});
+
+	dialog?.addEventListener('click', (event) => {
+		if (event.target === dialog && dialog instanceof HTMLDialogElement) dialog.close();
+	});
+
+	copyBtn?.addEventListener('click', async () => {
+		const label = copyBtn.querySelector('.copy-label');
+		if (!label) return;
+		try {
+			await navigator.clipboard.writeText(copyBtn.getAttribute('data-upi') ?? '');
+			label.textContent = 'copied!';
+		} catch {
+			label.textContent = 'copy failed';
+		}
+		setTimeout(() => { label.textContent = 'copy'; }, 1500);
+	});
+</script>
 
 <style>
 	.contact {
@@ -27,23 +134,224 @@ import Layout from '../layouts/Layout.astro';
 		padding-bottom: var(--space-2);
 	}
 
-	p {
+	.contact > p {
 		color: var(--text-secondary);
-		padding-bottom: var(--space-3);
+		padding-bottom: var(--space-4);
 	}
 
-	ul {
+	.cta-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		font-family: var(--font-heading);
+		font-size: 14px;
+		padding-bottom: var(--space-5);
+	}
+
+	.cta,
+	.cta-ghost {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		min-height: 44px;
+		padding: 0 var(--space-3);
+		border-radius: 6px;
+		font-size: 14px;
+		font-family: inherit;
+		cursor: pointer;
+	}
+
+	.cta {
+		background: var(--accent);
+		color: #fff;
+		border: none;
+	}
+
+	.cta:hover {
+		text-decoration: none;
+		filter: brightness(1.1);
+	}
+
+	.cta-ghost {
+		background: transparent;
+		border: 1px solid var(--border);
+		color: var(--text-primary);
+	}
+
+	.cta-ghost:hover {
+		border-color: var(--accent);
+		color: var(--accent-text);
+	}
+
+	.online h2 {
+		font-size: 13px;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--text-secondary);
+		padding-bottom: var(--space-2);
+	}
+
+	.online ul {
 		list-style: none;
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-2);
 		font-family: var(--font-heading);
+		font-size: 14px;
 	}
 
-	a {
-		display: inline-block;
-		min-height: 44px;
+	.online a {
 		display: inline-flex;
 		align-items: center;
+		min-height: 44px;
+	}
+
+	dialog {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		margin: 0;
+		max-width: 380px;
+		width: calc(100% - var(--space-4));
+		max-height: calc(100dvh - var(--space-4));
+		overflow-y: auto;
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		padding: var(--space-4);
+		background: var(--bg-elevated);
+		color: var(--text-primary);
+	}
+
+	dialog::backdrop {
+		background: rgba(0, 0, 0, 0.6);
+		backdrop-filter: blur(4px);
+	}
+
+	dialog .close {
+		position: absolute;
+		top: var(--space-2);
+		right: var(--space-2);
+		width: 32px;
+		height: 32px;
+		border: none;
+		background: transparent;
+		color: var(--text-secondary);
+		font-size: 20px;
+		line-height: 1;
+		cursor: pointer;
+		border-radius: 6px;
+	}
+
+	dialog .close:hover {
+		color: var(--text-primary);
+		background: var(--bg);
+	}
+
+	dialog .mug {
+		display: block;
+		margin: 0 auto var(--space-2);
+		color: var(--accent-text);
+	}
+
+	dialog h2 {
+		text-align: center;
+		font-size: 20px;
+		padding-bottom: var(--space-2);
+	}
+
+	dialog .quote {
+		text-align: center;
+		color: var(--text-secondary);
+		font-size: 14px;
+		padding-bottom: var(--space-3);
+	}
+
+	.amounts {
+		display: flex;
+		justify-content: center;
+		gap: var(--space-1);
+		padding-bottom: var(--space-3);
+		flex-wrap: wrap;
+	}
+
+	.amount {
+		font-family: var(--font-heading);
+		font-size: 14px;
+		padding: 6px 14px;
+		border: 1px solid var(--border);
+		border-radius: 6px;
+		background: transparent;
+		color: var(--text-primary);
+		cursor: pointer;
+	}
+
+	.amount:hover {
+		border-color: var(--accent);
+	}
+
+	.amount[aria-pressed='true'] {
+		border-color: var(--accent);
+		color: var(--accent-text);
+		background: color-mix(in srgb, var(--accent) 12%, transparent);
+	}
+
+	.qr-box {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-1);
+		background: #fff;
+		border-radius: 8px;
+		padding: var(--space-3);
+		margin-bottom: var(--space-3);
+	}
+
+	.qr-label {
+		font-family: var(--font-heading);
+		font-size: 12px;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: #14140f;
+	}
+
+	.qr-hint {
+		font-size: 12px;
+		color: #55534a;
+	}
+
+	.copy-upi {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		width: 100%;
+		font-family: var(--font-code);
+		font-size: 13px;
+		padding: 8px 12px;
+		border: 1px solid var(--border);
+		border-radius: 6px;
+		background: var(--bg);
+		color: var(--text-primary);
+		cursor: pointer;
+	}
+
+	.copy-upi:hover {
+		border-color: var(--accent);
+	}
+
+	.copy-label {
+		font-family: var(--font-heading);
+		font-size: 12px;
+		color: var(--accent-text);
+		flex-shrink: 0;
+	}
+
+	@media (max-width: 480px) {
+		.cta-row {
+			flex-direction: column;
+			align-items: stretch;
+		}
 	}
 </style>

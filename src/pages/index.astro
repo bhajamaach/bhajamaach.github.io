@@ -20,8 +20,8 @@ const latestPost = posts[0];
 		<div>
 			<h1>I build the parts of the stack most people skip.</h1>
 			<p class="lede">
-				I'm Kanishka — most people know me as bhajamaach. Most of my free time goes into allocators, renderers,
-				and kernels: the low-level stuff that's slow to learn and easy to get wrong. Lately I've been spending
+				 I'm Kanishka — bhajamaach if that's where you know me from. I don't build the parts people click on, I
+        build what's underneath: allocators, renderers, shells, the stuff nobody notices until it breaks. Lately I've been spending
 				more of it on AI infra, figuring out how inference and serving actually work.
 			</p>
 			<div class="cta-row">
@@ -39,8 +39,8 @@ const latestPost = posts[0];
 				<a href="/projects">all projects →</a>
 			</div>
 			<ul class="grid">
-				{featured.map((project) => (
-					<li class="card">
+				{featured.map((project, index) => (
+					<li class="card reveal" style={`--i: ${index}`}>
 						<span class="category">{project.data.category}</span>
 						<h3>{project.data.name}</h3>
 						<p>{project.data.description}</p>

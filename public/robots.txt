@@ -1,0 +1,32 @@
+User-agent: *
+Allow: /
+
+# AI crawlers/assistants are explicitly welcome — this is a portfolio meant to be found.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://bhajamaach.dev/sitemap-index.xml
+
+# LLM-friendly summary of this site's content:
+# https://bhajamaach.dev/llms.txt

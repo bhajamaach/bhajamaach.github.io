@@ -121,6 +121,7 @@
 		let dragging = false;
 		let lastX = 0, lastY = 0;
 		let velX = 0, velY = 0;
+		let lastScrollY = window.scrollY;
 
 		function pointerDown(x: number, y: number) {
 			dragging = true;
@@ -152,10 +153,17 @@
 
 		function animate() {
 			requestAnimationFrame(animate);
+
+			// Idle rotation also tracks scroll speed, so the cube reacts to page
+			// scrolling in addition to direct drag (NFR-1.4 still applies — no new listeners).
+			const scrollY = window.scrollY;
+			const scrollDelta = scrollY - lastScrollY;
+			lastScrollY = scrollY;
+
 			if (!dragging) {
 				velX *= 0.94;
 				velY *= 0.94;
-				rotY += autoSpeed + velX;
+				rotY += autoSpeed + velX + scrollDelta * 0.002;
 				rotX += velY;
 			}
 			group.rotation.y = rotY;
@@ -187,8 +195,8 @@
 	}
 
 	// Defer three.js off the critical path so it never competes with homepage text for LCP (NFR-1.4).
-	if ('requestIdleCallback' in window) {
-		(window as any).requestIdleCallback(init);
+	if (typeof window.requestIdleCallback === 'function') {
+		window.requestIdleCallback(init);
 	} else {
 		window.addEventListener('load', () => setTimeout(init, 0));
 	}

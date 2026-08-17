@@ -32,9 +32,9 @@ const categories = [
 					{items.map((project, index) => {
 						const search = `${project.data.name} ${project.data.description} ${project.data.techStack.join(' ')}`.toLowerCase();
 						return (
-							<li class="card" data-search={search} data-index={index}>
+							<li class="card reveal" data-search={search} data-index={index} style={`--i: ${index}`}>
 								{project.data.coverImage && (
-									<img src={project.data.coverImage} alt="" loading="lazy" class="thumb" />
+									<img src={project.data.coverImage} alt={`Screenshot of ${project.data.name}`} loading="lazy" class="thumb" />
 								)}
 								<a class="stretched-link" href={`/projects/${project.id}/`} aria-label={`View details for ${project.data.name}`}></a>
 								<h3>{project.data.name}</h3>
@@ -94,14 +94,16 @@ const categories = [
 	}
 
 	.grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		display: flex;
+		flex-wrap: wrap;
 		gap: var(--space-3);
 		list-style: none;
 	}
 
 	.card {
 		position: relative;
+		flex: 1 1 260px;
+		max-width: 400px;
 		border: 1px solid var(--border);
 		border-radius: 8px;
 		padding: var(--space-3);
@@ -116,6 +118,10 @@ const categories = [
 	.card:hover {
 		border-color: var(--accent);
 		transform: translateY(-2px);
+	}
+
+	.card[hidden] {
+		display: none;
 	}
 
 	.stretched-link {
