@@ -24,8 +24,62 @@ const links = [
 			))}
 			<ThemeToggle />
 		</div>
+		<div class="mobile-controls">
+			<ThemeToggle />
+			<button
+				class="menu-toggle"
+				id="nav-menu-toggle"
+				aria-expanded="false"
+				aria-controls="nav-menu-panel"
+				aria-label="Toggle navigation menu"
+			>
+				<span></span>
+				<span></span>
+				<span></span>
+			</button>
+		</div>
+	</div>
+	<div class="menu-panel" id="nav-menu-panel">
+		{links.map((link) => (
+			<a
+				href={link.href}
+				aria-current={pathname === link.href ? 'page' : undefined}
+				target={link.external ? '_blank' : undefined}
+				rel={link.external ? 'noreferrer' : undefined}
+			>{link.label}</a>
+		))}
 	</div>
 </header>
+
+<script>
+	const toggle = document.getElementById('nav-menu-toggle');
+	const panel = document.getElementById('nav-menu-panel');
+
+	if (toggle && panel) {
+		toggle.addEventListener('click', () => {
+			const isOpen = panel.classList.toggle('open');
+			toggle.classList.toggle('open', isOpen);
+			toggle.setAttribute('aria-expanded', String(isOpen));
+		});
+
+		panel.addEventListener('click', (event) => {
+			if ((event.target as HTMLElement).tagName === 'A') {
+				panel.classList.remove('open');
+				toggle.classList.remove('open');
+				toggle.setAttribute('aria-expanded', 'false');
+			}
+		});
+
+		document.addEventListener('click', (event) => {
+			if (!panel.classList.contains('open')) return;
+			if (event.target instanceof Node && !panel.contains(event.target) && !toggle.contains(event.target)) {
+				panel.classList.remove('open');
+				toggle.classList.remove('open');
+				toggle.setAttribute('aria-expanded', 'false');
+			}
+		});
+	}
+</script>
 
 <style>
 	.site-nav {
@@ -110,10 +164,88 @@ const links = [
 		transform: translateX(0);
 	}
 
+	.mobile-controls {
+		display: none;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.menu-toggle {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: 5px;
+		width: 32px;
+		height: 32px;
+		padding: 0;
+		background: none;
+		border: none;
+		cursor: pointer;
+	}
+
+	.menu-toggle span {
+		display: block;
+		width: 18px;
+		height: 2px;
+		background: var(--text-primary);
+		border-radius: 2px;
+		transition: transform 0.2s ease, opacity 0.2s ease;
+	}
+
+	.menu-toggle.open span:nth-child(1) {
+		transform: translateY(7px) rotate(45deg);
+	}
+
+	.menu-toggle.open span:nth-child(2) {
+		opacity: 0;
+	}
+
+	.menu-toggle.open span:nth-child(3) {
+		transform: translateY(-7px) rotate(-45deg);
+	}
+
+	.menu-panel {
+		display: none;
+		flex-direction: column;
+		max-height: 0;
+		overflow: hidden;
+		border-top: 1px solid transparent;
+		font-family: var(--font-heading);
+		font-size: 14px;
+		transition: max-height 0.2s ease;
+	}
+
+	.menu-panel.open {
+		max-height: 300px;
+		border-top-color: var(--border);
+	}
+
+	.menu-panel a {
+		padding: var(--space-3);
+		color: var(--text-primary);
+		border-bottom: 1px solid var(--border);
+	}
+
+	.menu-panel a:last-child {
+		border-bottom: none;
+	}
+
+	.menu-panel a[aria-current='page'] {
+		color: var(--accent-text);
+	}
+
 	@media (max-width: 560px) {
 		.links {
-			gap: var(--space-2);
-			font-size: 13px;
+			display: none;
+		}
+
+		.mobile-controls {
+			display: flex;
+		}
+
+		.menu-panel {
+			display: flex;
 		}
 	}
 </style>
