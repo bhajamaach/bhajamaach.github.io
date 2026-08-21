@@ -3,11 +3,18 @@ import Layout from '../layouts/Layout.astro';
 import ParticleCube from '../components/ParticleCube.astro';
 import { getCollection } from 'astro:content';
 
+const experience = (await getCollection('experience')).sort(
+	(a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf()
+);
+
 const allProjects = await getCollection('projects');
 const featuredIds = ['auraalloc', 'niyom', 'ssg-pharma'];
 const featured = featuredIds
 	.map((id) => allProjects.find((p) => p.id === id))
 	.filter((p) => p !== undefined);
+
+const formatDate = (date: Date) =>
+	date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
@@ -31,6 +38,34 @@ const latestPost = posts[0];
 		</div>
 		<ParticleCube />
 	</section>
+
+	{experience.length > 0 && (
+		<section class="experience" id="experience">
+			<div class="section-head">
+				<h2>Experience</h2>
+			</div>
+			<ul class="timeline">
+				{experience.map((job, index) => (
+					<li class="job reveal" style={`--i: ${index}`}>
+						<span class="dot"></span>
+						<a class="job-card" href={`/experience/${job.id}/`}>
+							{job.data.logo && <img class="logo" src={job.data.logo} alt="" width="32" height="32" loading="lazy" />}
+							<div class="job-body">
+								<div class="job-head">
+									<h3>{job.data.role} · {job.data.company}</h3>
+									<span class="dates">
+										{formatDate(job.data.startDate)} – {job.data.endDate ? formatDate(job.data.endDate) : 'Present'}
+									</span>
+								</div>
+								<p>{job.data.description}</p>
+								<span class="read-more">Details →</span>
+							</div>
+						</a>
+					</li>
+				))}
+			</ul>
+		</section>
+	)}
 
 	{featured.length > 0 && (
 		<section class="featured">
@@ -144,6 +179,148 @@ const latestPost = posts[0];
 	.section-head a {
 		font-family: var(--font-heading);
 		font-size: 14px;
+	}
+
+	.experience {
+		padding-bottom: var(--space-6);
+		scroll-margin-top: calc(var(--space-6) + 16px);
+	}
+
+	.timeline {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		list-style: none;
+		padding-left: var(--space-4);
+	}
+
+	.timeline::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 4px;
+		width: 1px;
+		background: linear-gradient(to bottom, transparent, var(--border) 8%, var(--border) 92%, transparent);
+	}
+
+	.job {
+		position: relative;
+	}
+
+	.dot {
+		position: absolute;
+		top: 50%;
+		left: calc(var(--space-4) * -1 + 1px);
+		transform: translateY(-50%);
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--bg);
+		border: 2px solid var(--text-secondary);
+		transition: border-color 0.15s ease, transform 0.15s ease;
+	}
+
+	.job:has(.job-card:hover) .dot {
+		border-color: var(--accent-text);
+		transform: translateY(-50%) scale(1.2);
+	}
+
+	.job-card {
+		position: relative;
+		display: flex;
+		align-items: flex-start;
+		gap: var(--space-3);
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		padding: var(--space-3);
+		background: var(--bg-elevated);
+		color: var(--text-primary);
+		transition: border-color 0.15s ease, transform 0.15s ease;
+	}
+
+	.job-card:hover {
+		text-decoration: none;
+		border-color: var(--accent);
+		transform: translateY(-2px);
+	}
+
+	.job .logo {
+		flex-shrink: 0;
+		width: 32px;
+		height: 32px;
+		border-radius: 6px;
+		object-fit: contain;
+		background: var(--bg);
+		border: 1px solid var(--border);
+		padding: 4px;
+	}
+
+	.job-body {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		min-width: 0;
+	}
+
+	.job-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-2);
+	}
+
+	.job-head h3 {
+		position: relative;
+		font-size: 16px;
+		color: var(--text-primary);
+		transition: padding-left 0.15s ease;
+	}
+
+	.job-head h3::before {
+		content: '>';
+		position: absolute;
+		left: -0.9em;
+		color: var(--accent-text);
+		opacity: 0;
+		transform: translateX(-4px);
+		transition: opacity 0.15s ease, transform 0.15s ease;
+	}
+
+	.job-card:hover .job-head h3 {
+		padding-left: 0.9em;
+	}
+
+	.job-card:hover .job-head h3::before {
+		opacity: 1;
+		transform: translateX(0);
+	}
+
+	.dates {
+		font-family: var(--font-code);
+		font-size: 12px;
+		color: var(--text-secondary);
+		white-space: nowrap;
+	}
+
+	.job-card p {
+		color: var(--text-secondary);
+		font-size: 14px;
+	}
+
+	.read-more {
+		display: inline-block;
+		padding-top: var(--space-1);
+		font-family: var(--font-heading);
+		font-size: 13px;
+		color: var(--accent-text);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.job-card:hover {
+			transform: none;
+		}
 	}
 
 	.featured {

@@ -55,23 +55,31 @@
 		const canvas = document.getElementById('cube-canvas') as HTMLCanvasElement;
 		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-		let THREE: typeof import('three');
+		let Scene: typeof import('../lib/three-lite').Scene,
+			PerspectiveCamera: typeof import('../lib/three-lite').PerspectiveCamera,
+			WebGLRenderer: typeof import('../lib/three-lite').WebGLRenderer,
+			Group: typeof import('../lib/three-lite').Group,
+			BufferGeometry: typeof import('../lib/three-lite').BufferGeometry,
+			Float32BufferAttribute: typeof import('../lib/three-lite').Float32BufferAttribute,
+			PointsMaterial: typeof import('../lib/three-lite').PointsMaterial,
+			Points: typeof import('../lib/three-lite').Points;
 		try {
-			THREE = await import('three');
+			({ Scene, PerspectiveCamera, WebGLRenderer, Group, BufferGeometry, Float32BufferAttribute, PointsMaterial, Points } =
+				await import('../lib/three-lite'));
 		} catch {
 			showFallback();
 			return;
 		}
 
-		const scene = new THREE.Scene();
-		const camera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
+		const scene = new Scene();
+		const camera = new PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
 		camera.position.z = 6.5;
 
-		const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+		const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true });
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 		renderer.setSize(wrap.clientWidth, wrap.clientHeight);
 
-		const group = new THREE.Group();
+		const group = new Group();
 		scene.add(group);
 
 		// Build a cube made of points sampled across its 6 faces, not just edges —
@@ -100,11 +108,11 @@
 			addFace(axis, -1);
 		});
 
-		const geometry = new THREE.BufferGeometry();
-		geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+		const geometry = new BufferGeometry();
+		geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
 
 		const accentHex = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#5aa4ea';
-		const material = new THREE.PointsMaterial({
+		const material = new PointsMaterial({
 			color: accentHex,
 			size: 0.045,
 			sizeAttenuation: true,
@@ -112,7 +120,7 @@
 			opacity: 0.85,
 		});
 
-		const points = new THREE.Points(geometry, material);
+		const points = new Points(geometry, material);
 		group.add(points);
 
 		let rotY = 0.4;

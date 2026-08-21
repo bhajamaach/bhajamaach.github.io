@@ -1,0 +1,125 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+	const experience = await getCollection('experience');
+	return experience.map((job) => ({
+		params: { id: job.id },
+		props: { job },
+	}));
+}
+
+const { job } = Astro.props;
+const { Content } = await render(job);
+
+const formatDate = (date: Date) =>
+	date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+const siteURL = Astro.site?.toString().replace(/\/$/, '') ?? '';
+const jobSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'OrganizationRole',
+	roleName: job.data.role,
+	startDate: job.data.startDate.toISOString().slice(0, 10),
+	...(job.data.endDate && { endDate: job.data.endDate.toISOString().slice(0, 10) }),
+	'@id': `${siteURL}/experience/${job.id}/`,
+};
+---
+
+<Layout title={`${job.data.role} at ${job.data.company} — Kanishka Das`} description={job.data.description}>
+	<script type="application/ld+json" set:html={JSON.stringify(jobSchema)} />
+	<article>
+		<a class="back-link" href="/#experience" id="back-link">&larr; back to experience</a>
+
+		{job.data.logo && <img class="logo" src={job.data.logo} alt="" width="48" height="48" loading="lazy" />}
+
+		<span class="dates">
+			{formatDate(job.data.startDate)} – {job.data.endDate ? formatDate(job.data.endDate) : 'Present'}
+		</span>
+		<h1>
+			{job.data.role} ·{' '}
+			{job.data.companyUrl ? (
+				<a href={job.data.companyUrl} target="_blank" rel="noreferrer">{job.data.company}</a>
+			) : (
+				job.data.company
+			)}
+		</h1>
+
+		<div class="prose">
+			<Content />
+		</div>
+	</article>
+</Layout>
+
+<script>
+	const backLink = document.getElementById('back-link');
+	if (backLink && document.referrer) {
+		try {
+			if (new URL(document.referrer).origin === location.origin) {
+				backLink.addEventListener('click', (event) => {
+					event.preventDefault();
+					history.back();
+				});
+			}
+		} catch {}
+	}
+</script>
+
+<style>
+	article {
+		max-width: var(--max-width-prose);
+		margin: 0 auto;
+		padding: var(--space-5) 0 var(--space-6);
+	}
+
+	.back-link {
+		display: inline-block;
+		font-family: var(--font-heading);
+		font-size: 14px;
+		color: var(--text-secondary);
+		padding-bottom: var(--space-3);
+	}
+
+	.back-link:hover {
+		color: var(--accent-text);
+	}
+
+	.logo {
+		border-radius: 8px;
+		object-fit: contain;
+		background: var(--bg-elevated);
+		border: 1px solid var(--border);
+		padding: 6px;
+		margin-bottom: var(--space-2);
+	}
+
+	.dates {
+		display: block;
+		font-family: var(--font-code);
+		font-size: 12px;
+		color: var(--text-secondary);
+	}
+
+	h1 {
+		font-size: 28px;
+		padding: var(--space-1) 0 var(--space-3);
+	}
+
+	h1 a {
+		color: var(--text-primary);
+	}
+
+	h1 a:hover {
+		color: var(--accent-text);
+	}
+
+	.prose :global(p) {
+		color: var(--text-secondary);
+		padding-bottom: var(--space-2);
+	}
+
+	.prose :global(a) {
+		text-decoration: underline;
+	}
+</style>

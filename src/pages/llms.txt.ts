@@ -4,9 +4,14 @@ import type { APIRoute } from 'astro';
 export const GET: APIRoute = async ({ site }) => {
 	const base = site?.toString().replace(/\/$/, '') ?? 'https://bhajamaach.github.io';
 	const projects = await getCollection('projects');
+	const experience = (await getCollection('experience')).sort(
+		(a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf()
+	);
 	const posts = (await getCollection('blog')).sort(
 		(a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
 	);
+	const formatDate = (date: Date) =>
+		date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
 	const categories = ['Systems', 'AI/ML', 'Client Work'] as const;
 
@@ -22,9 +27,16 @@ export const GET: APIRoute = async ({ site }) => {
 		`- LinkedIn: https://www.linkedin.com/in/kanishka-das-512320284`,
 		`- X: https://x.com/bhajamaacha`,
 		'',
-		'## Projects',
+		'## Experience',
 		'',
 	];
+
+	for (const job of experience) {
+		const range = `${formatDate(job.data.startDate)} – ${job.data.endDate ? formatDate(job.data.endDate) : 'Present'}`;
+		lines.push(`- **${job.data.role} · ${job.data.company}** (${range}): ${job.data.description.trim()} — ${base}/experience/${job.id}/`);
+	}
+
+	lines.push('', '## Projects', '');
 
 	for (const category of categories) {
 		const items = projects.filter((p) => p.data.category === category);

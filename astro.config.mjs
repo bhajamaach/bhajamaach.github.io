@@ -7,6 +7,7 @@ export default defineConfig({
 	// Currently the live GitHub Pages URL. Switch to https://bhajamaach.dev once the domain
 	// is purchased and DNS/CNAME is configured — see README's deployment notes.
 	site: 'https://bhajamaach.github.io',
+	prefetch: { defaultStrategy: 'hover' },
 	integrations: [sitemap()],
 	markdown: {
 		shikiConfig: {

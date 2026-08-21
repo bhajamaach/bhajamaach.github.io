@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import { getCollection } from 'astro:content';
 
 interface Props {
 	title: string;
@@ -13,6 +14,10 @@ const { title, description = "Kanishka Das — systems engineer, AI infra", imag
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const ogImageURL = new URL(image ?? '/og-default.png', Astro.site);
 const siteURL = Astro.site?.toString().replace(/\/$/, '') ?? '';
+
+const currentJob = (await getCollection('experience'))
+	.filter((job) => !job.data.endDate)
+	.sort((a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf())[0];
 
 const personSchema = {
 	'@context': 'https://schema.org',
@@ -30,6 +35,13 @@ const personSchema = {
 				'https://x.com/bhajamaacha',
 				'https://www.linkedin.com/in/kanishka-das-512320284',
 			],
+			...(currentJob && {
+				worksFor: {
+					'@type': 'Organization',
+					name: currentJob.data.company,
+					...(currentJob.data.companyUrl && { url: currentJob.data.companyUrl }),
+				},
+			}),
 		},
 		{
 			'@type': 'WebSite',
@@ -56,6 +68,21 @@ const personSchema = {
 		<meta name="description" content={description} />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
+
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap"
+			media="print"
+			onload="this.media='all'"
+		/>
+		<noscript>
+			<link
+				rel="stylesheet"
+				href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap"
+			/>
+		</noscript>
 
 		<meta property="og:type" content="website" />
 		<meta property="og:site_name" content="Kanishka Das (bhajamaach)" />
