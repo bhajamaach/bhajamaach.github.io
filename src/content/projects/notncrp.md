@@ -1,7 +1,7 @@
 ---
 name: "NotNCRP"
 description: "An urgency-first alternative to India's official cybercrime reporting portal, built for Varun Mayya's Build What Moves India hackathon."
-category: "Client Work"
+category: "Hackathon"
 techStack: ["Next.js", "React", "PostgreSQL", "Tesseract.js", "Tailwind CSS"]
 githubUrl: "https://github.com/bhajamaach/bwmi-NotNCRP"
 liveUrl: "https://bwmi.bhajamaach.dev"
