@@ -26,7 +26,7 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Sitemap: https://bhajamaach.github.io/sitemap-index.xml
+Sitemap: https://bhajamaach.dev/sitemap-index.xml
 
 # LLM-friendly summary of this site's content:
-# https://bhajamaach.github.io/llms.txt
+# https://bhajamaach.dev/llms.txt
